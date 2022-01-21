@@ -7,6 +7,10 @@ public class Player : Unit , IAnimation
 {
     private List<Monster> monsterList = new List<Monster>();
 
+    public float attacktime;
+
+    private Transform shootingTransform;
+
     IEnumerator Coroutine_TargetBatchPointMove(GameObject _batchPoint, int _index)
     {
         Vector2 distance = _batchPoint.transform.position - transform.position;
@@ -28,13 +32,17 @@ public class Player : Unit , IAnimation
         float magnitude = Mathf.Infinity;
         Monster target = null;
 
+        float time = attacktime;
+
         // 추후 true를 !isDie 변수로 변경
         while(true)
         {
             // 충돌체 반경에 들어온 몬스터 갯수가 1개이상일때부터 거리계산 시작
             yield return new WaitUntil(() => monsterList.Count > 0);
 
-            for(int i=0; i<monsterList.Count; i++)
+            time -= Time.deltaTime;
+
+            for (int i=0; i<monsterList.Count; i++)
             {
                 if(Vector2.Distance(transform.position, monsterList[i].transform.position) < magnitude)
                 {
@@ -48,10 +56,13 @@ public class Player : Unit , IAnimation
             float angle = Mathf.Atan2(distance.y, distance.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-            // 공격 애니메이션 재생
-            if (!IsCurrentAnimation("Attack")) // 현재 공격 상태가 아닌지 확인
+            // 공격 : 추후 수정
+            if(time < 0f)
             {
-                PlayTriggerAnimation("Attack");
+                string key = "Bullet_0";
+                Bullet newbullet = ShootingManager.Instance.GetBullet(key, shootingTransform.transform.position);
+                newbullet.GetComponent<Rigidbody2D>().velocity = Vector2.right * 5f;
+                time = attacktime;
             }
 
             yield return null;
@@ -67,7 +78,7 @@ public class Player : Unit , IAnimation
         else
             transform.localScale = new Vector3(-1f, 1f, 1f);
 
-        Rb.velocity = distance.normalized * 1.5f;
+        Rb.velocity = distance.normalized * 2f;
 
         StartCoroutine(Coroutine_TargetBatchPointMove(_batchPoint , _index));
     }
@@ -87,6 +98,8 @@ public class Player : Unit , IAnimation
         spriteRenderer = GetComponent<SpriteRenderer>();
         Rb = GetComponent<Rigidbody2D>();
         animtor = GetComponent<Animator>();
+
+        shootingTransform = transform.GetChild(0).GetComponent<Transform>();
     }
 
     public void AnimEvent_Attack()
