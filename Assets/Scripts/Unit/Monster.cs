@@ -8,7 +8,7 @@ public interface IMonster
     void SetMonster(int _spawnPointIndex , Transform[] _waypoints , int _monsterindex);
 }
 
-public class Monster : Unit , IMonster
+public class Monster : Unit , IMonster , IAnimation
 {
     private int currentWaypoint;
 
@@ -31,7 +31,7 @@ public class Monster : Unit , IMonster
             {
                 // 목적지 도착시 잠시 멈춘다
                 Rb.velocity = Vector2.zero;
-                animtor.SetBool("isWalk", false);
+                PlayBoolAnimation("isWalk", false);
                 yield return new WaitForSeconds(0.2f);
 
                 // 다음 도착지 선정
@@ -42,12 +42,12 @@ public class Monster : Unit , IMonster
                     Vector2 start = _waypoints[waypointsLength - 1].transform.GetChild(0).transform.position;
                     Vector2 end = _waypoints[waypointsLength - 1].transform.GetChild(1).transform.position;
                     yield return Coroutine_StairsPlay(start, end);
-                    animtor.SetTrigger("Die");
+                    PlayTriggerAnimation("Die");
                     yield break;
                 }
                 Vector2 newdirection = _waypoints[currentWaypoint].transform.position - transform.position;
                 Rb.velocity = newdirection.normalized * speed;
-                animtor.SetBool("isWalk", true);
+                PlayBoolAnimation("isWalk", true);
             }
 
             yield return null;
@@ -67,32 +67,6 @@ public class Monster : Unit , IMonster
             transform.position = Vector2.Lerp(_start, _end, percent);
             yield return null;
         }
-    }
-
-    /// <summary>
-    /// 애니메이션 클립 지정한곳에 이벤트 발생
-    /// </summary>
-    protected override void AnimEvent_Die()
-    {
-        OnDie((currentWaypoint) =>
-        {
-            // 플레이어 HP  감소
-            if (currentWaypoint > waypointslength - 1)
-            {
-                Debug.Log("플레이어 HP 감소");
-            }
-            // 플레이어 경험치 AND 골드 증가
-            else
-            {
-                Debug.Log("플레이어 경험치 AND 골드 증가 ");
-            }
-            currentWaypoint = 0;
-        });
-    }
-
-    public override void SetUnit(int _level, int _hp)
-    {
-        base.SetUnit(_level, _hp);       
     }
 
     public void SetMonster(int spawnPointIndex , Transform[] _waypoints , int _monsterindex)
@@ -130,6 +104,34 @@ public class Monster : Unit , IMonster
     public override void OnDie(Action<int> _callback)
     {
         _callback?.Invoke(waypointslength);
-        UnitManager.Instance.RemoveGameObject(transform.name , gameObject);
+        ObjectPool<Monster>.RemoveObject($"Monster_{Index}", gameObject);
+    }
+
+    public void AnimEvent_Attack()
+    {
+        
+    }
+
+    public void AnimEvent_Hit()
+    {
+        
+    }
+
+    void IAnimation.AnimEvent_Die()
+    {
+        OnDie((currentWaypoint) =>
+        {
+            // 플레이어 HP  감소
+            if (currentWaypoint > waypointslength - 1)
+            {
+                Debug.Log("플레이어 HP 감소");
+            }
+            // 플레이어 경험치 AND 골드 증가
+            else
+            {
+                Debug.Log("플레이어 경험치 AND 골드 증가 ");
+            }
+            currentWaypoint = 0;
+        });
     }
 }
