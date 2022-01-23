@@ -33,7 +33,7 @@ public class BatchManager : Singleton<BatchManager> , IBatchPoint
             // ex) BatchPoint_2 : _ 기준으로 나눈다
             string[] namesplit = hit.collider.transform.name.Split('_');
             _index = int.Parse(namesplit[1]);
-            Debug.Log(_index);
+            Debug.Log($"RayCast HitPoint : BatchPoint_{_index}");
             return hit.collider.gameObject;
         }
         _index = -1;

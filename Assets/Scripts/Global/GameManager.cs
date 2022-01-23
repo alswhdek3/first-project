@@ -13,11 +13,15 @@ public class GameManager : Singleton<GameManager> , ISetting<Monster>
     [SerializeField]
     private Transform[] spawnpoints;
 
+    private List<Monster> monsterList = new List<Monster>(); 
+
     // Stage
     private int currentStage;
     private bool isGameover;
 
     public int CurrentStage => currentStage;
+
+    public List<Monster> MonsterList => monsterList;
     public bool IsGameover => isGameover;
 
     private IEnumerator Coroutine_GamePatten()
@@ -44,6 +48,9 @@ public class GameManager : Singleton<GameManager> , ISetting<Monster>
                 newMonster.gameObject.SetActive(true);
                 newMonster.SetUnit(currentStage, currentStage * 100, monsterindex);
                 newMonster.SetMonster(randomSpawnPointIndex, targetSpawnPointTransforms, monsterindex);
+
+                // New Monster Add
+                monsterList.Add(newMonster);
             }
         };
 
@@ -63,6 +70,12 @@ public class GameManager : Singleton<GameManager> , ISetting<Monster>
             CreateMonster?.Invoke();
             yield return new WaitForSeconds(1f);
         }
+    }
+
+    public void RemoveMonster(Monster _monster)
+    {
+        if (monsterList.Contains(_monster))
+            monsterList.Remove(_monster);
     }
 
     protected override void OnAwake()

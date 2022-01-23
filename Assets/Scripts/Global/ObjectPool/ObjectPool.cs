@@ -13,7 +13,7 @@ public class ObjectPool<T> : MonoBehaviour where T : Component
 
     private static Dictionary<string, GameObject> prefabPool;
 
-    public static event ObjectPoolEventArgs<T>.ObjectPoolEventHandler ObjectPoolEventHandler = null;
+    public static event ObjectPoolEventArgs<T>.ObjectPoolEventHandler ObjectPoolEventHandler;
 
     public static Dictionary<string, List<T>> GameObjectPool { get { return gameObjectPool; } }
 

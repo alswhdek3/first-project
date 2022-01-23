@@ -11,14 +11,14 @@ public interface IMonster
 public class Monster : Unit , IMonster , IAnimation
 {
     private int currentWaypoint;
+    private int waypointslength;
 
     private float speed;
 
-    private int waypointslength;
-
     public int CurrentWayPoint => currentWaypoint;
-
     public float Speed => speed;
+
+    public int CurrentHP => Hp;
     private IEnumerator Coroutine_Move(Transform[] _waypoints)
     {
         int waypointsLength = _waypoints.Length;
@@ -92,9 +92,13 @@ public class Monster : Unit , IMonster , IAnimation
         waypointslength = _waypoints.Length;
         StartCoroutine(Coroutine_Move(_waypoints));
     }
-    public override void OnDmage(int _damage)
+    public override void OnDamge(int _damage)
     {
-        
+        base.OnDamge(_damage);
+        if(Hp <= 0)
+        {
+            PlayTriggerAnimation("Die");
+        }
     }
 
     /// <summary>
@@ -104,9 +108,16 @@ public class Monster : Unit , IMonster , IAnimation
     public override void OnDie(Action<int> _callback)
     {
         _callback?.Invoke(waypointslength);
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject player in players)
+            player.GetComponent<Player>().target = null;
+
+        // ObjectPool에서 삭제
         ObjectPool<Monster>.RemoveObject($"Monster_{Index}", gameObject);
+        GameManager.Instance.RemoveMonster(this);
     }
 
+    #region AnimEvent
     public void AnimEvent_Attack()
     {
         
@@ -134,4 +145,5 @@ public class Monster : Unit , IMonster , IAnimation
             currentWaypoint = 0;
         });
     }
+    #endregion
 }

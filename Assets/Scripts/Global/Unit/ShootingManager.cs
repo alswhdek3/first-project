@@ -7,9 +7,14 @@ public class ShootingManager : Singleton<ShootingManager>
     public Bullet GetBullet(string _key , Vector2 _position)
     {
         Bullet newbullet = ObjectPool<Bullet>.GetObject(_key, gameObject);
-        newbullet.gameObject.SetActive(true);
-        newbullet.transform.position = _position;
-        return newbullet;
+        if(newbullet != null)
+        {
+            newbullet.gameObject.SetActive(true);
+            newbullet.transform.position = _position;
+
+            return newbullet;
+        }
+        return null;
     }
     protected override void OnAwake()
     {
