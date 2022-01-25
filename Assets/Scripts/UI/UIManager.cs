@@ -14,13 +14,21 @@ public class UIManager : Singleton<UIManager>
         return damagetext;
     }
 
+    public void RemoveDamageText(DamageText _text)
+    {
+        _text.transform.SetParent(transform);
+        _text.transform.localPosition = Vector3.zero;
+
+        _text.gameObject.SetActive(false);
+        damagetextpool.Set(_text);
+    }
+
     protected override void OnAwake()
     {
         damagetextpool = new GameObjectPool<DamageText>(5, () =>
         {
             var obj = Instantiate(dmgTextPrefab);
             obj.transform.SetParent(transform);
-            obj.transform.localScale = Vector3.one;
             obj.transform.localPosition = Vector3.zero;
 
             var dmgtext = obj.GetComponent<DamageText>();

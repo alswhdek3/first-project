@@ -22,7 +22,7 @@ public class ObjectPool<T> : MonoBehaviour where T : Component
         return Resources.LoadAll<GameObject>(_path);
     }
 
-    public static Dictionary<string, List<T>> GetGameObjectPool(string[] _keys , GameObject[] _obj , GameObject _parent)
+    public static Dictionary<string, List<T>> GetGameObjectPool(string[] _keys, GameObject[] _obj, GameObject _parent)
     {
         gameObjectPool = new Dictionary<string, List<T>>();
         prefabPool = new Dictionary<string, GameObject>();
@@ -31,10 +31,10 @@ public class ObjectPool<T> : MonoBehaviour where T : Component
         {
             Debug.Log($"ObjectPool({e.GetType()}) Count : {e.Pool.Count}");
             string message = string.Empty;
-            foreach(KeyValuePair<string, List<T>> objpool in e.Pool)
-            {
+
+            foreach (KeyValuePair<string, List<T>> objpool in e.Pool)
                 message += $"Key : {objpool.Key} , ValueListCount : {objpool.Value.Count}\n";
-            }
+
             Debug.Log(message);
         };
 
@@ -74,13 +74,13 @@ public class ObjectPool<T> : MonoBehaviour where T : Component
 
                 index += 1;
             }
-            if(ObjectPoolEventHandler != null)
+            if (ObjectPoolEventHandler != null)
             {
                 ObjectPoolEventHandler?.Invoke(new ObjectPoolEventArgs<T>(gameObjectPool));
             }
             return gameObjectPool;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Debug.LogError(e.Message);
             return null;
@@ -150,7 +150,7 @@ public class ObjectPool<T> : MonoBehaviour where T : Component
         }
     }
 
-    public static void SetObjectParentInChildren(GameObject _obj , GameObject _parent)
+    public static void SetObjectParentInChildren(GameObject _obj, GameObject _parent)
     {
         _obj.transform.SetParent(_parent.transform);
         _obj.transform.localScale = Vector3.one;

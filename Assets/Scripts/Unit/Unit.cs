@@ -32,6 +32,7 @@ public abstract class Unit : MonoBehaviour
 
         spriteRenderer = GetComponent<SpriteRenderer>();
         animtor = GetComponent<Animator>();
+        boxCollider = GetComponent<BoxCollider2D>();
     }
 
     protected void PlayBoolAnimation(string _name , bool _istrue)
@@ -64,8 +65,9 @@ public abstract class Unit : MonoBehaviour
         DamageText dmgtext = UIManager.Instance.GetCreateDamageText();
         dmgtext.gameObject.SetActive(true);
         dmgtext.transform.SetParent(canvas.transform);
-        dmgtext.transform.localPosition = new Vector2(transform.localPosition.x, transform.localPosition.y + (boxCollider.bounds.max.y + 0.1f));
-        dmgtext.SetText(_damage, damageTextDistance);
+        dmgtext.transform.position = new Vector2(transform.position.x, boxCollider.bounds.max.y + 0.1f);
+        Vector2 distance = damageTextDistance.transform.position - transform.position;
+        dmgtext.SetText(_damage, damageTextDistance , distance , boxCollider.bounds.min.y - 0.1f);
 
         Hp -= _damage;
     }

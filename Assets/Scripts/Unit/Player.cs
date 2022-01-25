@@ -101,7 +101,7 @@ public class Player : Unit , IAnimation
                 Bullet newbullet = ShootingManager.Instance.GetBullet(key, shootingTransform.transform.position);
                 if (newbullet != null)
                 {
-                    newbullet.SetBullet(200, key, target.gameObject);
+                    newbullet.SetBullet(UnityEngine.Random.Range(1,11), key, target.gameObject);
                     Vector2 distance = target.transform.position - transform.position;
                     newbullet.GetComponent<Rigidbody2D>().velocity = distance.normalized * 5f;
                 }

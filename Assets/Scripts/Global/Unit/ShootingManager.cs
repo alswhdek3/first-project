@@ -18,6 +18,7 @@ public class ShootingManager : Singleton<ShootingManager>
     }
     protected override void OnAwake()
     {
+        // object pool Setting
         GameObject[] bullets = ObjectPool<Bullet>.GetAllObjects("Prefabs/Units/Bullets");
         string[] keys = new string[bullets.Length];
         for (int i = 0; i < keys.Length; i++)

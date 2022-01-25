@@ -6,29 +6,30 @@ using UnityEngine;
 
 public class DamageText : MonoBehaviour
 {
-    private IEnumerator Coroutine_AnimationDamageText(Transform _damageTextDistance)
+    private IEnumerator Coroutine_AnimationDamageText(Transform _damageTextDistance , Vector2 _distance , float _colliderminy)
     {
+        float time = 3f;
         float currenttime = 0f;
         float percent = 0f;
-
         float velocity = (_damageTextDistance.transform.position - transform.position).y - 9.81f;
         
-        while(percent < 1f)
+        while(transform.localPosition.y > _colliderminy)
         {
             currenttime += Time.deltaTime;
-            percent = Vector2.Distance(transform.position,_damageTextDistance.transform.position) * 2f;
+            percent = currenttime / (time);
 
-            Vector2 position = Vector2.Lerp(transform.position, _damageTextDistance.transform.position, percent);
-            position.y = transform.position.y + (velocity * percent) + (-9.81f * percent * percent);
+            Vector2 position = Vector2.Lerp(transform.localPosition , _distance , percent);
+            position.y = transform.localPosition.y + (velocity * percent) + (-9.81f * percent * percent);
 
+            transform.localPosition = position;
             yield return null;
         }
-        Destroy(gameObject);
+        UIManager.Instance.RemoveDamageText(this);
     }
 
-    public void SetText(int damage , Transform _damageTextDistance)
+    public void SetText(int damage , Transform _damageTextDistance , Vector2 _distance , float _colliderminy)
     {
         gameObject.GetComponent<Text>().text = damage.ToString();
-        StartCoroutine(Coroutine_AnimationDamageText(_damageTextDistance));
+        StartCoroutine(Coroutine_AnimationDamageText(_damageTextDistance , _distance , _colliderminy));
     }
 }

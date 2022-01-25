@@ -13,7 +13,7 @@ public class GameManager : Singleton<GameManager> , ISetting<Monster>
     [SerializeField]
     private Transform[] spawnpoints;
 
-    private List<Monster> monsterList = new List<Monster>(); 
+    private List<Monster> monsterList = new List<Monster>();
 
     // Stage
     private int currentStage;

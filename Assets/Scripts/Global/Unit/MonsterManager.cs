@@ -24,7 +24,7 @@ public class MonsterManager : Singleton<MonsterManager>
             keys[i] = objects[i].transform.name; // Monster_0(Clone)형태로 이름이 설정되기때문에 코드 수정 예정
 
         // DictionaryObjectPool 적용
-        MonsterTable = ObjectPool<Monster>.GetGameObjectPool(keys, objects, gameObject);
+        //MonsterTable = ObjectPool<Monster>.GetGameObjectPool(keys, objects, gameObject);
         // ObjectPoolEventHandler Call
     }
 
