@@ -27,12 +27,19 @@ public abstract class Unit : MonoBehaviour
         Level = level;
         Hp = hp;
         Index = index;
+
+        boxCollider = GetComponent<BoxCollider2D>();
+
+        CommonComponet();
+    }
+
+    protected void CommonComponet()
+    {
         canvas = transform.GetChild(0).GetComponent<Canvas>();
         damageTextDistance = transform.GetChild(1).GetComponent<Transform>();
 
         spriteRenderer = GetComponent<SpriteRenderer>();
         animtor = GetComponent<Animator>();
-        boxCollider = GetComponent<BoxCollider2D>();
     }
 
     protected void PlayBoolAnimation(string _name , bool _istrue)
@@ -43,6 +50,19 @@ public abstract class Unit : MonoBehaviour
     protected void PlayTriggerAnimation(string _name)
     {
         animtor.SetTrigger(_name);
+    }
+
+    protected float GetTargetAnimationClipLength(string _clip)
+    {
+        AnimationClip[] clips = animtor.runtimeAnimatorController.animationClips;
+        foreach(var clip in clips)
+        {
+            if(_clip == clip.name)
+            {
+                return clip.length;
+            }
+        }
+        return -1f;
     }
 
     protected bool IsCurrentAnimation(string _name)

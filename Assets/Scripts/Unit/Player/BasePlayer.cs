@@ -3,17 +3,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : Unit , IAnimation
+public class BasePlayer : Unit , IAnimation
 {
-    public float attacktime = 2f;
+    // 공격주기시간
+    [SerializeField]
+    protected float attacktime = 2f;
 
-    public float range = 2f;
+    // 공격사정거리
+    [SerializeField]
+    protected float range = 2f;
 
-    private Transform shootingTransform;
+    // 플레이어 유효 시간
+    [SerializeField]
+    protected float validtime;
+
+    // 총알 속도
+    [SerializeField]
+    protected float bulletspeed = 5f;
+
+    protected Transform shootingTransform;
 
     public Monster target;
 
-    IEnumerator Coroutine_TargetBatchPointMove(GameObject _batchPoint, int _index)
+    // 지정한 배치 포인트로 터치시 포인트 변경 불가
+    public bool IsBatchPoint { get; set; }
+
+    protected IEnumerator Coroutine_TargetBatchPointMove(GameObject _batchPoint, int _index)
     {
         Vector2 distance = _batchPoint.transform.position - transform.position;
         while (distance.magnitude > 0.1f)
@@ -29,7 +44,7 @@ public class Player : Unit , IAnimation
         yield return Coroutine_Targeting();
     }
 
-    private IEnumerator Coroutine_Targeting()
+    protected IEnumerator Coroutine_Targeting()
     {
         float magnitude = Mathf.Infinity;
 
@@ -90,7 +105,7 @@ public class Player : Unit , IAnimation
         }
     }
 
-    private IEnumerator Coroutine_Attack()
+    protected virtual IEnumerator Coroutine_Attack()
     {
         while(true)
         {
@@ -137,28 +152,27 @@ public class Player : Unit , IAnimation
         
     }
 
+
     private void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        Rb = GetComponent<Rigidbody2D>();
-        animtor = GetComponent<Animator>();
+        CommonComponet();
 
         shootingTransform = transform.GetChild(2).GetComponent<Transform>();
 
         StartCoroutine(Coroutine_Attack());
     }
 
-    public void AnimEvent_Attack()
+    public virtual void AnimEvent_Attack()
     {
         
     }
 
-    public void AnimEvent_Hit()
+    public virtual void AnimEvent_Hit()
     {
        
     }
 
-    public void AnimEvent_Die()
+    public virtual void AnimEvent_Die()
     {
         
     }

@@ -12,7 +12,7 @@ public class BatchManager : Singleton<BatchManager> , IBatchPoint
     [SerializeField]
     private List<bool> batchPointStateList = new List<bool>();
 
-    public Player MyPlayer
+    public BasePlayer MyPlayer
     {
         get;
         set;
@@ -41,7 +41,7 @@ public class BatchManager : Singleton<BatchManager> , IBatchPoint
             batchPointStateList.Add(true);
         }
 
-        MyPlayer = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        MyPlayer = GameObject.FindGameObjectWithTag("Player").GetComponent<BasePlayer>();
     }
 
     protected override void OnStart()
@@ -58,16 +58,12 @@ public class BatchManager : Singleton<BatchManager> , IBatchPoint
             int index = int.Parse(namesplit[1]);
             Debug.Log($"Select BatchPoint : {batchpoint.transform.name} / Index : {index}");
 
-            // 선택한 BatchPoint가 비어있는지 체크
-            if (GetEmptyPoint(index))
+            // 선택한 BatchPoint가 비어있는지 체크 , BatchPoint가 정해지지않은 캐릭터 일 경우
+            if (GetEmptyPoint(index) && !MyPlayer.IsBatchPoint)
             {
+                MyPlayer.IsBatchPoint = true;
                 MyPlayer.TargetBatchPointMove(batchpoint.gameObject, index);
             }
         }
-    }
-
-    public GameObject GetSelectBatchPoint(Vector3 _touchpos)
-    {
-        throw new System.NotImplementedException();
     }
 }

@@ -78,10 +78,10 @@ public class Monster : Unit , IMonster , IAnimation
         speed = Level * 1.5f;
 
         // 왼쪽에서 몬스터가 스폰되면 Sprite Renderer FlipX false
-        if (spawnPointIndex == 2 || spawnPointIndex == 3)
-            spriteRenderer.flipX = false;
+        if (spawnPointIndex == 0 || spawnPointIndex == 1)
+            transform.localScale = new Vector3(-1f, 1f,1f);
         else
-            spriteRenderer.flipX = true;
+            transform.localScale = Vector3.one;
 
         Rb = gameObject.GetComponent<Rigidbody2D>();
         Rb.velocity = (_waypoints[0].transform.position - transform.position).normalized * speed;
@@ -110,7 +110,7 @@ public class Monster : Unit , IMonster , IAnimation
         _callback?.Invoke(waypointslength);
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
         foreach (GameObject player in players)
-            player.GetComponent<Player>().target = null;
+            player.GetComponent<BasePlayer>().target = null;
 
         // ObjectPool에서 삭제
         ObjectPool<Monster>.RemoveObject($"Monster_{Index}", gameObject);
