@@ -11,10 +11,11 @@ public class Bullet : MonoBehaviour
 
     public GameObject Target { get; private set; }
 
-    public void SetBullet(int _damage , string _key , GameObject _target)
+    public void SetBullet(int _damage , string _key , GameObject _target = null)
     {
         Damage = _damage;
         Key = _key;
+
         if(_target != null)
             Target = _target;
     }

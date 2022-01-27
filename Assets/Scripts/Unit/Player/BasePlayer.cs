@@ -153,7 +153,7 @@ public class BasePlayer : Unit , IAnimation
     }
 
 
-    private void Start()
+    protected override void Start()
     {
         CommonComponet();
 

@@ -93,4 +93,9 @@ public abstract class Unit : MonoBehaviour
     }
 
     public abstract void OnDie(Action<int> _action);
+
+    protected virtual void Start()
+    {
+
+    }
 }

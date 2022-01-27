@@ -16,6 +16,11 @@ public class ShootingManager : Singleton<ShootingManager>
         }
         return null;
     }
+
+    public void RemoveBullet(Bullet _bullet)
+    {
+        ObjectPool<Bullet>.RemoveObject(_bullet.Key , _bullet.gameObject);
+    }
     protected override void OnAwake()
     {
         // object pool Setting
