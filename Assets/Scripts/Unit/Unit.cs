@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Unit : MonoBehaviour
+public abstract class Unit : UnitEvents
 {
     protected int Level { get; set; }
     protected int Hp { get; set; }
@@ -31,6 +31,11 @@ public abstract class Unit : MonoBehaviour
         boxCollider = GetComponent<BoxCollider2D>();
 
         CommonComponet();
+    }
+
+    protected virtual void InitEventAdd()
+    {
+
     }
 
     protected void CommonComponet()
@@ -88,6 +93,12 @@ public abstract class Unit : MonoBehaviour
         dmgtext.transform.position = new Vector2(transform.position.x, boxCollider.bounds.max.y + 0.1f);
         Vector2 distance = damageTextDistance.transform.position - transform.position;
         dmgtext.SetText(_damage, damageTextDistance , distance , boxCollider.bounds.min.y - 0.1f);
+
+        // Hit Effect
+        Effect neweffect = ObjectPool<Effect>.GetObject("HitEffect_0", EffectPool.Instance.gameObject);
+        neweffect.gameObject.SetActive(true);
+        neweffect.transform.position = transform.position;
+        neweffect.SetEffect(neweffect.transform.name.Replace("(Clone)", ""));
 
         Hp -= _damage;
     }

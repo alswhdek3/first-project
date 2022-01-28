@@ -46,7 +46,7 @@ public class GameManager : Singleton<GameManager> , ISetting<Monster>
             if(newMonster != null)
             {
                 newMonster.gameObject.SetActive(true);
-                newMonster.SetUnit(currentStage, currentStage * 100, monsterindex);
+                newMonster.SetUnit(currentStage, currentStage * 1000, monsterindex);
                 newMonster.SetMonster(randomSpawnPointIndex, targetSpawnPointTransforms, monsterindex);
 
                 // New Monster Add
@@ -96,6 +96,5 @@ public class GameManager : Singleton<GameManager> , ISetting<Monster>
             keys[i] = monstres[i].transform.name;
 
         Dictionary<string, List<Monster>> monsterpool = ObjectPool<Monster>.GetGameObjectPool(keys, monstres, gameObject);
-        Debug.Log(monsterpool);
     }
 }

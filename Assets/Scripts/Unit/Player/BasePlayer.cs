@@ -21,9 +21,15 @@ public class BasePlayer : Unit , IAnimation
     [SerializeField]
     protected float bulletspeed = 5f;
 
+    // 경험치
+    [SerializeField]
+    protected float currentexp;
+
     protected Transform shootingTransform;
 
     public Monster target;
+
+    public UnitAttackEvent AttackEvent;
 
     // 지정한 배치 포인트로 터치시 포인트 변경 불가
     public bool IsBatchPoint { get; set; }
@@ -41,7 +47,8 @@ public class BasePlayer : Unit , IAnimation
         BatchManager.Instance.SetBatchPoint(_index, false);
 
         // 공격 시작
-        yield return Coroutine_Targeting();
+        AttackEvent?.Invoke(Level * 10, attacktime);
+        //yield return Coroutine_Targeting();
     }
 
     protected IEnumerator Coroutine_Targeting()
@@ -105,7 +112,7 @@ public class BasePlayer : Unit , IAnimation
         }
     }
 
-    protected virtual IEnumerator Coroutine_Attack()
+    protected virtual IEnumerator Coroutine_Attack(int _offensepower, float _attackduration)
     {
         while(true)
         {
@@ -116,12 +123,12 @@ public class BasePlayer : Unit , IAnimation
                 Bullet newbullet = ShootingManager.Instance.GetBullet(key, shootingTransform.transform.position);
                 if (newbullet != null)
                 {
-                    newbullet.SetBullet(UnityEngine.Random.Range(1,11), key, target.gameObject);
+                    newbullet.SetBullet(UnityEngine.Random.Range(_offensepower, _offensepower+50), key, target.gameObject);
                     Vector2 distance = target.transform.position - transform.position;
                     newbullet.GetComponent<Rigidbody2D>().velocity = distance.normalized * 5f;
                 }
 
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(_attackduration);
             }
             else
                 yield return null;
@@ -149,17 +156,25 @@ public class BasePlayer : Unit , IAnimation
 
     public override void OnDamge(int _damage)
     {
-        
+
     }
 
+    protected override void InitEventAdd()
+    {
+        AttackEvent.AddListener((offensepower, attackduration) =>
+        {
+            StartCoroutine(Coroutine_Targeting());
+            StartCoroutine(Coroutine_Attack(offensepower, attackduration));
+        });
+    }
 
     protected override void Start()
     {
         CommonComponet();
-
+        InitEventAdd();
         shootingTransform = transform.GetChild(2).GetComponent<Transform>();
 
-        StartCoroutine(Coroutine_Attack());
+        //StartCoroutine(Coroutine_Attack());
     }
 
     public virtual void AnimEvent_Attack()

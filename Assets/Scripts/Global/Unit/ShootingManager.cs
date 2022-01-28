@@ -30,6 +30,5 @@ public class ShootingManager : Singleton<ShootingManager>
             keys[i] = bullets[i].transform.name;
 
         Dictionary<string, List<Bullet>> bulletobjectpool = ObjectPool<Bullet>.GetGameObjectPool(keys, bullets, gameObject);
-        Debug.Log(bulletobjectpool);
     }
 }

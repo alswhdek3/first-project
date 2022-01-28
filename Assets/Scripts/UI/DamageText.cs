@@ -13,7 +13,7 @@ public class DamageText : MonoBehaviour
         float percent = 0f;
         float velocity = (_damageTextDistance.transform.position - transform.position).y - 9.81f;
         
-        while(transform.localPosition.y > _colliderminy)
+        while(transform.localPosition.y > _colliderminy || percent > 1f)
         {
             currenttime += Time.deltaTime;
             percent = currenttime / (time);

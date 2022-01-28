@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+
+using UnityEngine.UI;
 using UnityEngine;
 
 public interface IMonster
@@ -74,6 +76,13 @@ public class Monster : Unit , IMonster , IAnimation
         // Monster Name Change
         transform.name = $"Monster_{_monsterindex}";
 
+        //Canvas 밑에 데미지 텍스트 남아있는지 검사후 있으면 삭제
+        if(canvas.transform.childCount > 0)
+        {
+            for (int i = 0; i < canvas.transform.childCount; i++)
+                UIManager.Instance.RemoveDamageText(canvas.transform.GetChild(i).GetComponent<DamageText>());
+        }
+
         currentWaypoint = 0;
         speed = Level * 1.5f;
 
@@ -135,11 +144,13 @@ public class Monster : Unit , IMonster , IAnimation
             // 플레이어 HP  감소
             if (currentWaypoint > waypointslength - 1)
             {
+                // WayPointIndex x 10
                 Debug.Log("플레이어 HP 감소");
             }
             // 플레이어 경험치 AND 골드 증가
             else
             {
+                // WayPointIndex * 100 ~ 150 사이
                 Debug.Log("플레이어 경험치 AND 골드 증가 ");
             }
             currentWaypoint = 0;

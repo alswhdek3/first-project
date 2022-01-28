@@ -18,17 +18,11 @@ public class ObjectPoolEventArgs<T> : EventArgs where T : class
         private set;
     }
 
-    public string Key
-    {
-        get;
-        private set;
-    }
-
-    public List<T> ObjectList
+    public int ListCount
     {
         get
         {
-            return Pool[Key];
+            return Pool.Count;
         }
     }
 }

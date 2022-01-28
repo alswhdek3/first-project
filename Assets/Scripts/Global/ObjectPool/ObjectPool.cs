@@ -27,16 +27,16 @@ public class ObjectPool<T> : MonoBehaviour where T : Component
         gameObjectPool = new Dictionary<string, List<T>>();
         prefabPool = new Dictionary<string, GameObject>();
 
-        ObjectPoolEventHandler += (e) =>
-        {
-            Debug.Log($"ObjectPool({e.GetType()}) Count : {e.Pool.Count}");
-            string message = string.Empty;
+        //ObjectPoolEventHandler += (e) =>
+        //{
+        //    Debug.Log($"ObjectPool({e.GetType()}) Count : {e.Pool.Count}");
+        //    string message = string.Empty;
 
-            foreach (KeyValuePair<string, List<T>> objpool in e.Pool)
-                message += $"Key : {objpool.Key} , ValueListCount : {objpool.Value.Count}\n";
+        //    foreach (KeyValuePair<string, List<T>> objpool in e.Pool)
+        //        message += $"Key : {objpool.Key} , ValueListCount : {objpool.Value.Count}\n";
 
-            Debug.Log(message);
-        };
+        //    Debug.Log(message);
+        //};
 
         try
         {

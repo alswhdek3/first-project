@@ -6,16 +6,16 @@ public class FirstPlayer : BasePlayer
 {
     [SerializeField]
     private int bulletcount = 20;
-    protected override IEnumerator Coroutine_Attack()
+    protected override IEnumerator Coroutine_Attack(int _offensepower, float _attackduration)
     {
-        float length = GetTargetAnimationClipLength("Attack");
+        //float length = GetTargetAnimationClipLength("Attack");
 
         float defaultangle = 360f / bulletcount;
         float plusangle = 0f;
 
         while(true)
         {
-            yield return new WaitForSeconds(length);
+            yield return new WaitForSeconds(_attackduration);
             for(int i=0; i<bulletcount; i++)
             {
                 float angle = plusangle + (i * defaultangle);
@@ -24,7 +24,7 @@ public class FirstPlayer : BasePlayer
                 // ÃÑ¾Ë »ý¼º
                 string key = "Bullet_1";
                 Bullet newbullet = ShootingManager.Instance.GetBullet("Bullet_1", transform.position);
-                newbullet.SetBullet(1, key);
+                newbullet.SetBullet(_offensepower, key);
                 newbullet.GetComponent<Rigidbody2D>().velocity = direction.normalized * 10f;
             }
             plusangle += 1;
@@ -43,6 +43,7 @@ public class FirstPlayer : BasePlayer
     {
         CommonComponet();
         validtime = animtor.runtimeAnimatorController.animationClips[0].length;
-        StartCoroutine(Coroutine_Attack());
+        Level = 1;
+        StartCoroutine(Coroutine_Attack(Level*100, validtime));
     }
 }
