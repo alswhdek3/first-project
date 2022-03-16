@@ -8,7 +8,7 @@ using Photon.Realtime;
 using UnityEngine.UI;
 using UnityEngine;
 
-public class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGameProcess , ICamera where T : Component
+public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGameProcess , ICamera where T : Component
 {
     [SerializeField]
     protected GameObject gamePlayObject;
@@ -38,14 +38,16 @@ public class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGameProcess , I
     protected event Action GameOverEvent;
 
     protected string UIPath { get; set; }
-
     public List<T> PlayerList { get { return playerList; } }
+    public MovePadController MovePadController { get { return movepadctr; } }
     public bool IsGameOver { get; private set; }
 
     protected void SetObjectParent(GameObject _parent , GameObject _children)
     {
         _children.transform.SetParent(_parent.transform);
     }
+
+    protected abstract void InitEventAdd();
 
     #region PlayerList Interface
     public void AddPlayer(T _newplayer)

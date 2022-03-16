@@ -14,9 +14,7 @@ public class Util : MonoBehaviourPun
         foreach(GameObject player in players)
         {
             if(player.GetComponent<PhotonView>().OwnerActorNr == PhotonNetwork.LocalPlayer.ActorNumber)
-            {
                 return player.transform;
-            }
         }
         return null;
     }
@@ -26,9 +24,7 @@ public class Util : MonoBehaviourPun
         foreach(T player in _playerList)
         {
             if(_actorNumber == player.GetComponent<PhotonView>().OwnerActorNr)
-            {
                 return player.transform;
-            }
         }
         return null;
     }

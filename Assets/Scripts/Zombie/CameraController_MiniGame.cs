@@ -8,7 +8,7 @@ using Photon.Realtime;
 using System;
 using System.Linq;
 
-public class CameraController_MiniGame : MonoBehaviour
+public class CameraController_MiniGame : SingtonMonoBehaviour<CameraController_MiniGame>
 {
     [SerializeField]
     private Transform myCharacterTarget;
@@ -44,14 +44,6 @@ public class CameraController_MiniGame : MonoBehaviour
             myCharacterTarget = value;
         }
     }
-
-    /*private void Start()
-    {
-        if(myCharacterTarget == null)
-        {
-            StartCoroutine(Coroutine_FindMyCharacter());
-        }
-    }*/  
 
     // Update is called once per frame
     private void Update()

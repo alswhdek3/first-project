@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 
-using System.Threading.Tasks;
-
 using UnityEngine.UI;
 using UnityEngine;
 
@@ -39,8 +37,7 @@ public class BasePhoton : MonoBehaviourPunCallbacks
     protected event Action inGameEvent; // 게임 시작시 초기 이벤트
     
     public override void OnConnectedToMaster()
-    {
-        
+    {       
         // Server Connect Success EventHandler Show 
         photonServerEventHandler?.Invoke(this, gameVerstion, true);
 
@@ -69,8 +66,8 @@ public class BasePhoton : MonoBehaviourPunCallbacks
     #region 방 입장 , 방 입장 실패 , 방 퇴장
     public override void OnJoinedRoom()
     {
-        photonRoomEventHandler?.Invoke(this, new PhotonEventArgs(gameVerstion, PhotonNetwork.CurrentRoom.Name,
-            PhotonNetwork.CurrentRoom.PlayerCount, true));
+        //photonRoomEventHandler?.Invoke(this, new PhotonEventArgs(gameVerstion, PhotonNetwork.CurrentRoom.Name,
+        //    PhotonNetwork.CurrentRoom.PlayerCount, true));
 
         // 방 입장 후 게임 시작 카운트다운
         roomEnterEvent?.Invoke(PhotonNetwork.CurrentRoom.PlayerCount);

@@ -11,16 +11,16 @@ public class ZombieRunState : IState
     }
     public void OperatorEnter()
     {
-        throw new System.NotImplementedException();
+        zombie.UnitAnimator.SetBool(UnitState.Run.ToString(), true); // 애니메이션 달리기 상태로 전환
     }
 
     public void OperatorExit()
     {
-        throw new System.NotImplementedException();
+        zombie.UnitAnimator.SetBool(UnitState.Run.ToString(), false); // 애니메이션 대기 상태로 전환
     }
 
     public void OperatorUpdate()
     {
-        throw new System.NotImplementedException();
+        zombie.TargetSearch();
     }
 }

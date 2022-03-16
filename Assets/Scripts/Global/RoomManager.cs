@@ -7,7 +7,7 @@ using UnityEngine;
 using Photon.Realtime;
 using Photon.Pun;
 
-public class RoomManager : BasePhoton, IPhotonButton
+public class RoomManager : BasePhoton,IPhotonButton
 {
     [SerializeField]
     private GameObject intro , inRoom;
@@ -23,20 +23,18 @@ public class RoomManager : BasePhoton, IPhotonButton
     #region ButtonOnClickEvent
     public void OnClickStart()
     {
-        // 서버 접속 이벤트
+        // 이벤트 등록
         photonServerEventHandler += (_sender, gameversion, isServerConnect) => // 서버접속 성공 여부 이벤트
         {
             Debug.Log($"====== ZombieGame ======\n" +
                 $"PhotonNetwork Server Version : {gameversion} / IsServerConnect : {isServerConnect}");
-        };
-
-        // 방 입장 이벤트
-        photonRoomEventHandler += (_sender, _e) =>
+        };     
+        photonRoomEventHandler += (_sender, _e) => // 방 입장 이벤트
         {
             Debug.Log($"Enter Room Name : {_e.RoomName},EnterRoomPlayerCount : {_e.CurrentRoomPlayerCount}, IsServerConnect : {_e.IsServerConnect}\n" +
                 $"PlayerNickName:{PhotonNetwork.NickName} / PlayerActorNumber:{PhotonNetwork.LocalPlayer.ActorNumber}");
         };
-        roomEnterEvent += (_currentPlayerCount) =>
+        roomEnterEvent += (_currentPlayerCount) => // 방 입장 이벤트2
         {
             // 인트로 UI 비활성화 -> InRoomUI 활성화
             intro.gameObject.SetActive(false);

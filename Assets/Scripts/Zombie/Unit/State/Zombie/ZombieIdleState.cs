@@ -16,7 +16,8 @@ public class ZombieIdleState : IState
 
     public void OperatorExit()
     {
-        
+        // 추적대상 검색
+        zombie.TargetSearch();
     }
 
     public void OperatorUpdate()

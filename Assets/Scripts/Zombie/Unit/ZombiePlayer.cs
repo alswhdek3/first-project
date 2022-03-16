@@ -14,11 +14,8 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
 
     private int score;
 
-    private ZombieManager gamemanager;
-
     public event EventHandler<ZombieGameTeleport> TeleportEventHandler; // 텔레포트 이벤트
-    public event EventHandler DieEventHandler; // 좀비에게 잡혔을때 이벤트
-    public event EventHandler<Zombie> RecoveryEventHandler; // 좀비에서 회복되었을때 이벤트
+    public event Action<int> AutoAddScoreEventHandler; // 점수 자동 증가 이벤트
 
     public int Score { get { return score; } }
     public bool IsZombie { get { return isZombie; } }
@@ -35,34 +32,17 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
         if (movePadController == null)
             return;
 
-        // 좀비 상태가 아닐때 MovePad 컨트롤 가능
-        if(!isZombie)
-        {
-            if (pv.IsMine)
-            {
-                // 애니메이션 동기화
-                pv.RPC(nameof(AnimationShareRPC), RpcTarget.All, UnitState.Run.ToString(), movePadController.IsDrag);
-            }
-        }
+        stateTable[currentState].OperatorUpdate();
     }
 
     protected override void OnEnable()
     {
-        if(pv.IsMine)
-        {
-            // 추적중인 플레이어가 좀비에서 캐릭터로 회복되면 타겟팅 재 지정 이벤트도 등록
-            Zombie prevlocalzombie = gamemanager.ZombieList.Find(localzombie => localzombie.GetComponent<PhotonView>().IsMine && !localzombie.IsAI);
-            RecoveryEventHandler?.Invoke(this, prevlocalzombie);
-        }        
+           
     }
 
     protected override void OnDisable()
     {
-        if(pv.IsMine)
-        {
-            // MovePad로 조작가능한 좀비 생성
-            DieEventHandler?.Invoke(this, EventArgs.Empty);
-        }
+        
     }
 
     #region IZombiePlayerSpawn
@@ -120,18 +100,18 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
     }
     #endregion
 
-    public void SetScore(int _amount)
+    public void AddScore(int _amount)
     {
         score += _amount;
-        // LocalPlayer ScoreText UI 적용
-
+    }
+    public void SetIsZombie(bool _iszombie)
+    {
+        isZombie = _iszombie;
     }
 
-    public override void SetUnit<T>(int _actornumber, float _speed, T _manager)
+    public override void SetUnit(int _actornumber, float _speed, ZombieManager _manager)
     {
-        ActorNumber = _actornumber;
-        Speed = _speed;
-        gamemanager = _manager as ZombieManager;
+        base.SetUnit(_actornumber, _speed, _manager);
     }
 
     protected override void OnTriggerEnter(Collider other)
@@ -142,9 +122,10 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
         ItemBuffEvent -= ItemEvent;
     }
 
-    public override void InitEventAdd()
+    protected override void InitStateTableAdd()
     {
-        ItemBuffEvent += ItemEvent; // 아이템 버프 이벤트 등록
-        DieEventHandler += DieEvent; // 좀비에게 잡혔을때 이벤트 등록
-    }   
+        stateTable.Add(UnitState.Idle, new ZombiePlayerIdleState(this));
+        stateTable.Add(UnitState.Run, new ZombiePlayerIdleState(this));
+        stateTable.Add(UnitState.Die, new ZombiePlayerIdleState(this));
+    }
 }

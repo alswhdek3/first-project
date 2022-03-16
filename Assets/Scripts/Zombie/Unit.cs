@@ -10,18 +10,20 @@ using UnityEngine;
 public enum UnitState
 {
     None=-1,
-    Idle,Run,Attack,
+    Idle,Run,Attack,Die,
     Max
 }
 
-public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObservable
+public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObservable
 {
+    protected ZombieManager gamemanager;
+
     protected Rigidbody rb;
     protected Animator animator;
 
     protected PhotonView pv;
 
-    protected MovePadController movePadController;
+    protected MovePadController movePadController;                 
 
     protected Vector3 currentDir;
     protected Quaternion currentRot;
@@ -29,8 +31,10 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
     protected Dictionary<UnitState, IState> stateTable = new Dictionary<UnitState, IState>();
     protected UnitState currentState;
 
-    // 아이템 버프 이벤트
-    public event EventHandler<ZombieGameItem> ItemBuffEvent;
+    // 이벤트
+    public event EventHandler<ZombieGameItem> ItemBuffEvent; // 아이템 버프 이벤트
+    public event EventHandler UnitDisableEventHandler; // 비활성화 이벤트
+    public event EventHandler UnitEnableEventHandler; // 활성화 이벤트
 
     #region 프로퍼티
     public int ActorNumber { get; set; }
@@ -38,11 +42,18 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
     public UnitState CurrentState { get { return currentState; } }
     public Dictionary<string, float> AnimationLengthTable { get; set; }
     public Animator UnitAnimator { get { return animator; } }
+    public MovePadController MovePadController { get { return movePadController; } }
+    public ZombieManager GameManager { get { return gamemanager; } }
     #endregion
 
-    public abstract void SetUnit<T>(int _actornumber, float _speed , T _manager) where T : class;
+    public virtual void SetUnit(int _actornumber, float _speed , ZombieManager _manager)
+    {
+        ActorNumber = _actornumber;
+        Speed = _speed;
+        gamemanager = _manager;
+    }
 
-    public abstract void InitEventAdd();
+    protected abstract void InitStateTableAdd();
 
     public float GetAnimationLength(string _animationclipname)
     {
@@ -55,21 +66,38 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
         return AnimationLengthTable[_animationclipname];
     }
 
-    public bool GetIsLocalPlayer()
-    {
-        return pv.IsMine;
-    }
-
     public void SetMovePadController(MovePadController _movePadController)
     {
         movePadController = _movePadController;
     }
 
+    public void AnimationShare(string _clip, bool _ison)
+    {
+        pv.RPC(nameof(AnimationShareRPC), RpcTarget.All, _clip, _ison);
+    }
+
+    public bool GetIsLocalPlayer()
+    {
+        return pv.IsMine;
+    }
+
+    #region Interface Methods
+    public void Active()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void DeActive()
+    {
+        gameObject.SetActive(false);
+    }
+    #endregion
+
     #region RPC
     [PunRPC]
-    protected void AnimationShareRPC(string _run, bool _isDrag)
+    protected void AnimationShareRPC(string _clip, bool _ison)
     {
-        animator.SetBool(_run, _isDrag);
+        animator.SetBool(_clip, _ison);
     }
     #endregion
 
@@ -96,6 +124,7 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
         // 현재상태 FSM 종료
         stateTable[currentState].OperatorExit();
         currentState = UnitState.None;
+
         // 현재상태 변경
         currentState = _state;
         stateTable[currentState].OperatorEnter(); // 이벤트 전달
@@ -133,6 +162,9 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
             if (!AnimationLengthTable.ContainsKey(clip.name))
                 AnimationLengthTable.Add(clip.name, clip.length);
         }
+
+        // InitStateTable
+        InitStateTableAdd();
     }
 
     protected virtual void Update()
@@ -152,17 +184,18 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
                 transform.position = Vector3.Lerp(transform.position, currentDir, Time.deltaTime * 10f);
                 transform.rotation = Quaternion.Slerp(transform.rotation, currentRot, Time.deltaTime * 10f);
             }
-        }
+        }       
     }
 
     protected virtual void OnEnable()
     {
-
+        UnitEnableEventHandler?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void OnDisable()
     {
-
+        UnitDisableEventHandler?.Invoke(this,EventArgs.Empty);
+        UnitDisableEventHandler = null;
     }
 
     protected virtual void OnTriggerEnter(Collider other)
@@ -170,6 +203,6 @@ public abstract class Unit :  MonoBehaviourPun, IUnit , IAnimation,  IPunObserva
         // 아이템 버프 이벤트
         if(other.gameObject.CompareTag("Item"))
             ItemBuffEvent?.Invoke(this, other.GetComponent<ZombieGameItem>());
-    }
+    }    
     #endregion
 }

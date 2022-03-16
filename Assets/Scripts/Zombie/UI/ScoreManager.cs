@@ -38,32 +38,44 @@ public class ScoreManager : SingtonMonoBehaviour<ScoreManager>
             scorecards[i].gameObject.SetActive(_isShow);
     }
 
-    public void ShowScoreUI(int _actornumber, int _score , int _rank)
+    public void AddScore(int _actornumber, int _amount)
     {
         // 점수가 오른 플레이어 점수 리스트 UI에 적용
         ZombiePlayer player = gamemanager.PlayerList.Find(p => p.GetComponent<PhotonView>().OwnerActorNr == _actornumber);
+        player.AddScore(_amount);
 
-        for(int i=0; i< scorecards.Length; i++)
+        for (int i=0; i< scorecards.Length; i++)
         {
             string[] split = scorecards[i].transform.name.Split('_'); // ex) ScoreCard_2
             int actornumber = int.Parse(split[1]);
-            if(_actornumber == actornumber)
-            {
-                scorecards[i].SetCard(_score, _rank ,_rank <= 3 ? rankSprites[_rank-1] : null);
-            }
+            //if(_actornumber == actornumber)
+            //    scorecards[i].SetCard(_score, _rank, _rank <= 3 ? rankSprites[_rank - 1] : null);
         }
 
         // LocalPlayer 점수만 UI에 반영(오른쪽 상단 점수)
         if (player.GetIsLocalPlayer())
-            myScoreText.text = $"{_score}점";
+            myScoreText.text = $"{player.Score}점";
+    }
+
+    public void TargetScoreCardColorChange(int _actornumber , Color _color)
+    {
+        for (int i = 0; i < scorecards.Length; i++)
+        {
+            string[] split = scorecards[i].transform.name.Split('_'); // ex) ScoreCard_2
+            int actornumber = int.Parse(split[1]);
+            if (_actornumber == actornumber)
+                scorecards[i].GetComponent<Image>().color = _color;
+        }
     }
 
     private void OnEnable()
     {
+        // 모든 플레이어 점수 카드 생성
         CreateScoreListEventHandler?.Invoke(PhotonNetwork.CurrentRoom.PlayerCount , scorecardobj , scoreListParent , scorecards);
     }
     private void OnDisable()
     {
+        // 모든 플레이어 점수 카드 삭제(재활용)
         AllScoreCardRemoveEventHandler?.Invoke(scorecards);
     }
 }
