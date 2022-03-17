@@ -8,7 +8,7 @@ using UnityEngine.AI;
 using Photon.Pun;
 using Photon.Realtime;
 
-public class Zombie : Unit , IZombiePlayerSpawn
+public class Zombie : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
 {
     private NavMeshAgent nvAgent;
     private List<ZombiePlayer> playerList;
@@ -77,7 +77,7 @@ public class Zombie : Unit , IZombiePlayerSpawn
         }
     }
 
-    #region ZombiePlayer Spawn Interface
+    #region Interface Methods
     public void Enable(Vector3 _position, ICamera camera)
     {
         gameObject.SetActive(true);
@@ -85,13 +85,22 @@ public class Zombie : Unit , IZombiePlayerSpawn
 
         camera.SetCameraTarget(transform);
     }
-
     public bool GetIsPrevSpawn()
     {
         if (gamemanager.ZombieList.Contains(this))
             return true;
 
         return false;
+    }
+
+    public void PlayItemBuff(ZombieGameItemType type)
+    {
+        switch(type)
+        {
+            case ZombieGameItemType.Recovery:
+                SetState(UnitState.Recover);
+                break;
+        }
     }
     #endregion
 
@@ -167,7 +176,8 @@ public class Zombie : Unit , IZombiePlayerSpawn
     }
     protected override void OnDisable()
     {
-        base.OnDisable();        
+        base.OnDisable();
+        RecoverEventHandler?.Invoke(this, playerList.Find(player => player.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber));
     }
 
     protected override void Update()
@@ -208,6 +218,6 @@ public class Zombie : Unit , IZombiePlayerSpawn
         stateTable.Add(UnitState.Idle, new ZombieIdleState(this));
         stateTable.Add(UnitState.Run, new ZombieIdleState(this));
         stateTable.Add(UnitState.Attack, new ZombieIdleState(this));
-    }
+    }    
     #endregion
 }

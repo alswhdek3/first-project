@@ -1,48 +1,170 @@
-ï»¿using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+
+using Photon.Realtime;
+using Photon.Pun;
+
 using UnityEngine;
 
-public enum ZombieGameItemType
+public class ZombieGameItemManager : ItemManager
 {
-    None = -1,
-    Coin,
-    Slow,
-    Recovery,
-    Max
-}
-public class ZombieGameItemData
-{
-    public ZombieGameItemData(ZombieGameItemType _type, int _amount, float _duration = -1)
+    [Header("Manager")]
+    [SerializeField]
+    private ZombieManager gamemanager;
+
+    [Header("SpawnPoints")]
+    [SerializeField]
+    private Transform[] spawnpoints;
+    [SerializeField]
+    private bool[] isEmptySpawnPoints;
+
+    [Header("ItemCreateTime")]
+    public float coinItemCreateTime = 10f, recoverItemCreateTime = 15f;
+
+    // ItemPool
+    public Dictionary<string,List<ZombieGameItem>> itempool;
+
+    public int GetIsEmptySpawnPoint()
     {
-        type = _type;
-        amount = _amount;
-        duration = _duration;
-    }
-
-    private ZombieGameItemType type; // ì•„ì´í…œ íƒ€ì…
-    private int amount; // ì¦ê°€ê°’
-    private float duration; // ì§€ì†ì‹œê°„
-}
-
-public class ZombieGameItemManager : SingtonMonoBehaviour<ZombieGameItemManager> , IData<ZombieGameItemData>
-{
-    public Dictionary<string, ZombieGameItemData> ItemTable { get; set; }
-
-    private void InitItemData()
-    {
-        for(int i=0; i<(int)ZombieGameItemType.Max; i++)
+        for(int i=0; i< isEmptySpawnPoints.Length; i++)
         {
-            ZombieGameItemData newItemData = null;
-            switch((ZombieGameItemType)i)
-            {
-
-            }
+            if (isEmptySpawnPoints[i])
+                return i;
         }
-        //ItemTable = CommonData<ZombieGameItemData>.GetDataTable()
+        return -1;
     }
 
-    protected override void OnAwake()
+    private void InitItemCrate()
     {
-        
+        isEmptySpawnPoints = new bool[spawnpoints.Length];
+
+        for (int i=0; i< spawnpoints.Length; i++)
+        {
+            ZombieGameItem newitem = GetItem(ref itempool, ZombieGameItemType.Coin.ToString());
+            newitem.SetItem(this, ZombieGameItemType.Coin);
+
+            // ¾ÆÀÌÅÛ À§Ä¡ ÁöÁ¤
+            newitem.transform.position = spawnpoints[i].transform.position;
+            isEmptySpawnPoints[i] = false;
+
+            // ¾ÆÀÌÅÛ È°¼ºÈ­
+            newitem.gameObject.SetActive(true);
+        }
+    }
+    /// <summary>
+    /// »ç¿ëÇß´ø ¾ÆÀÌÅÛ ½ºÆù »óÅÂ°ª true·Î ÃÊ±âÈ­
+    /// </summary>
+    public void AllResetSpawnPoint()
+    {
+        for (int i = 0; i < isEmptySpawnPoints.Length; i++)
+            isEmptySpawnPoints[i] = true;
+    }
+    private void ItemSetting(ZombieGameItem _item,ref ZombieGameItemType _type,int _spawnPointIndex)
+    {
+        _item.transform.position = spawnpoints[_spawnPointIndex].transform.position; // ¾ÆÀÌÅÛ À§Ä¡ÁöÁ¤
+        _item.SetItem(this, _type); // ¾ÆÀÌÅÛ ¼¼ÆÃ
+        _item.gameObject.SetActive(true); // ¾ÆÀÌÅÛ È°¼ºÈ­
+        isEmptySpawnPoints[_spawnPointIndex] = false; // ¾ÆÀÌÅÛ »ı¼ºµÈ À§Ä¡ »óÅÂ false·Î º¯°æ
+
+        _type = ZombieGameItemType.None; // ¾ÆÀÌÅÛ Å¸ÀÔ ÃÊ±âÈ­
+    }
+    #region Events
+    private void ItemManagerEnableEvent(object sender, EventArgs e)
+    {
+        StartCoroutine(nameof(Coroutine_AutoCreateItem));
+        IEnumerator Coroutine_AutoCreateItem()
+        {
+            float time = 0f;
+            ZombieGameItemType newItemType = ZombieGameItemType.None;
+
+            while (!gamemanager.IsGameOver) // °ÔÀÓ Á¾·á µÇ±âÀü±îÁö ÁöÁ¤ÇÑ ½Ã°£¸¶´Ù ¾ÆÀÌÅÛ ¹İº¹ »ı¼º
+            {     
+               time = Time.deltaTime;
+
+                // ¹æÀåÀÌ ¾ÆÀÌÅÛ Å¸ÀÔ µ¿±âÈ­
+                if(PhotonNetwork.LocalPlayer.IsMasterClient)
+                {
+                    // ¾ÆÀÌÅÛ Å¸ÀÔ ÁöÁ¤
+                    if (time % coinItemCreateTime == 0)
+                        newItemType = ZombieGameItemType.Coin;
+                    if (time % recoverItemCreateTime == 0)
+                        newItemType = ZombieGameItemType.Recovery;
+
+                    pv.RPC(nameof(CreateItemRPC), RpcTarget.All, newItemType); // ¾ÆÀÌÅÛ »ı¼º
+                }
+                yield return null;
+            }
+            gameObject.SetActive(false); // ItemManager GameObject Disable
+        }
+    }
+    private void ItemManagerDisableEvent(object sender, EventArgs e)
+    {
+        ZombieGameItem[] items = gamemanager.GetComponentsInChildren<ZombieGameItem>();
+        foreach (ZombieGameItem item in items)
+            RemoveObject(ref itempool, item);
+
+        AllResetSpawnPoint(); // ¾ÆÀÌÅÛ ½ºÆùÆ÷ÀÎÆ® »óÅÂ ÃÊ±âÈ­
+    }
+    #endregion
+
+    #region RPC
+    [PunRPC]
+    private void CreateItemRPC(ZombieGameItemType type)
+    {
+        // ¾ÆÀÌÅÛ »ı¼º
+        switch (type)
+        {
+            case ZombieGameItemType.Coin: //ÄÚÀÎ ¾ÆÀÌÅÛ ºó ÀÚ¸® ¸ğµç°÷¿¡ »ı¼º
+                for (int i = 0; i < spawnpoints.Length; i++)
+                {
+                    if (!isEmptySpawnPoints[i])
+                        continue;
+
+                    ZombieGameItem coinitem = GetItem(ref itempool, type.ToString()); // ¾ÆÀÌÅÛ »ı¼º
+                    ItemSetting(coinitem,ref type,i); // ¾ÆÀÌÅÛ ¼¼ÆÃ
+                }
+                break;
+            case ZombieGameItemType.Recovery: // È¸º¹ ¾ÆÀÌÅÛ 1°³ »ı¼º
+                int spawnPointIndex = GetIsEmptySpawnPoint();
+                if (spawnPointIndex != -1)
+                {
+                    ZombieGameItem recoveritem = GetItem(ref itempool, type.ToString()); // ¾ÆÀÌÅÛ »ı¼º
+                    ItemSetting(recoveritem,ref type,spawnPointIndex); // ¾ÆÀÌÅÛ ¼¼ÆÃ
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    #endregion
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        string path = "Prefabs/ZombieGame/Item";
+        InitObjectPoolSetting(ref itempool, path, 5);
+
+        // ¾ÆÀÌÅÛ ½ºÆùÆ÷ÀÎÆ® ÃÊ±â ¼¼ÆÃ
+        isEmptySpawnPoints = new bool[spawnpoints.Length];
+        AllResetSpawnPoint();
+
+        // ÃÊ±â ¾ÆÀÌÅÛ »ı¼º
+        InitItemCrate();
+    }
+    protected override void Start()
+    {
+        // ÀÌº¥Æ® µî·Ï
+        EnableEventHandler += ItemManagerEnableEvent;
+        DisableEventHandler += ItemManagerDisableEvent;
+    }
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+    }
+    protected override void OnDisable()
+    {
+        base.OnDisable();       
     }
 }

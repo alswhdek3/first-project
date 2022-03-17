@@ -8,7 +8,7 @@ using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ZombiePlayer : Unit , IZombiePlayerSpawn
+public class ZombiePlayer : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
 {
     private bool isZombie;
 
@@ -45,7 +45,7 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
         
     }
 
-    #region IZombiePlayerSpawn
+    #region Interface Methods
     public void Enable(Vector3 _position , ICamera camera)
     {
         gameObject.SetActive(true);
@@ -53,7 +53,6 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
 
         camera.SetCameraTarget(transform);
     }
-
     public bool GetIsPrevSpawn()
     {
         if (gamemanager.GetPlayerList().Contains(this))
@@ -61,34 +60,22 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
 
         return false;
     }
-    #endregion
 
-    #region EventHandler
-    private void ItemEvent(object _sender , ZombieGameItem _item)
+    public void PlayItemBuff(ZombieGameItemType type)
     {
-        switch (_item.Type)
+        switch(type)
         {
-            case ZombieGameItemType.Coin:
-                // 50점 증가
-                score += 50;
+            case ZombieGameItemType.Coin: // 10~100점 사이 점수 증가
+                int amount = UnityEngine.Random.Range(10, 101);
+                AddScore(amount);
                 break;
-            // 좀비 이동속도 5초동안 /2
-            case ZombieGameItemType.Slow:
-                List<Zombie> zombieList = gamemanager.ZombieList;
-                foreach (Zombie zombie in zombieList)
-                {
-                    zombie.Speed = zombie.Speed / 2f;
-
-                    StartCoroutine(nameof(Coroutine_SpeedSlowEnd));
-                    IEnumerator Coroutine_SpeedSlowEnd()
-                    {
-                        yield return new WaitForSeconds(5f);
-                        zombie.Speed = gamemanager.moveSpeed * 1.5f;
-                    }
-                }
+            default:
                 break;
         }
     }
+    #endregion
+
+    #region EventHandler
     private void DieEvent(object _sender , EventArgs _e)
     {
         int randomindex = UnityEngine.Random.Range(0, gamemanager.ZombieSpawnPointLength);
@@ -117,9 +104,6 @@ public class ZombiePlayer : Unit , IZombiePlayerSpawn
     protected override void OnTriggerEnter(Collider other)
     {
         base.OnTriggerEnter(other);
-
-        // 일회성 버프이기때문에 버프 실행후 삭제
-        ItemBuffEvent -= ItemEvent;
     }
 
     protected override void InitStateTableAdd()

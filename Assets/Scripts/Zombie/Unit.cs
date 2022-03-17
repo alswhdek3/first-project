@@ -10,7 +10,7 @@ using UnityEngine;
 public enum UnitState
 {
     None=-1,
-    Idle,Run,Attack,Die,
+    Idle,Run,Attack,Recover,Die,
     Max
 }
 
@@ -46,18 +46,13 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
     public ZombieManager GameManager { get { return gamemanager; } }
     #endregion
 
-    public virtual void SetUnit(int _actornumber, float _speed , ZombieManager _manager)
+    public bool GetIsLocalPlayer()
     {
-        ActorNumber = _actornumber;
-        Speed = _speed;
-        gamemanager = _manager;
+        return pv.IsMine;
     }
-
-    protected abstract void InitStateTableAdd();
-
     public float GetAnimationLength(string _animationclipname)
     {
-        if(!AnimationLengthTable.ContainsKey(_animationclipname))
+        if (!AnimationLengthTable.ContainsKey(_animationclipname))
         {
             Debug.LogError($"AnimationTable에 {_animationclipname}키가 존재하지않습니다 !!");
             return -1f;
@@ -65,6 +60,15 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
 
         return AnimationLengthTable[_animationclipname];
     }
+
+    public virtual void SetUnit(int _actornumber, float _speed , ZombieManager _manager)
+    {
+        ActorNumber = _actornumber;
+        Speed = _speed;
+        gamemanager = _manager;
+    }
+
+    protected abstract void InitStateTableAdd();   
 
     public void SetMovePadController(MovePadController _movePadController)
     {
@@ -75,10 +79,9 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
     {
         pv.RPC(nameof(AnimationShareRPC), RpcTarget.All, _clip, _ison);
     }
-
-    public bool GetIsLocalPlayer()
+    public void TargetItemBuffPlay(IZombieGameItemBuff buff,ZombieGameItemType item)
     {
-        return pv.IsMine;
+        buff.PlayItemBuff(item);
     }
 
     #region Interface Methods

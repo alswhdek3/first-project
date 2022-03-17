@@ -33,9 +33,9 @@ public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGamePr
 
     protected List<T> playerList = new List<T>();
 
-    protected event Action GameStartEvent;
-    protected event Action GamePlayEvent;
-    protected event Action GameOverEvent;
+    protected event Action GameStartEventAction;
+    protected event Action GamePlayEventAction;
+    protected event Action GameOverEventAction;
 
     protected string UIPath { get; set; }
     public List<T> PlayerList { get { return playerList; } }
@@ -114,8 +114,8 @@ public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGamePr
     {
         base.Start();
 
-        GameStartEvent?.Invoke();
-        GamePlayEvent?.Invoke();
-        GameOverEvent?.Invoke();
+        GameStartEventAction?.Invoke();
+        GamePlayEventAction?.Invoke();
+        GameOverEventAction?.Invoke();
     }
 }

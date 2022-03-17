@@ -24,12 +24,13 @@ public class ZombieRecoverState : IState
             ScoreManager.Instance.TargetScoreCardColorChange(prevlocalplayer.ActorNumber, Color.green);//점수 카드 색상 변경
             prevlocalplayer.SetIsZombie(false); //isZombie bool형 변수 false 값으로 변경
             zombie.gameObject.SetActive(false); // 좀비 비활성화
-        };       
+        };
+        zombie.SetState(UnitState.Idle); // 대기 상태로 변경
     }
 
     public void OperatorExit()
     {
-
+        zombie.gameObject.SetActive(false);
     }
 
     public void OperatorUpdate()

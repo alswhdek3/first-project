@@ -34,7 +34,7 @@ public class BasePhoton : MonoBehaviourPunCallbacks
     protected event Action<int> roomEnterEvent; // 방 입장 
     protected event Action leftRoomEvent; // 방 퇴장
 
-    protected event Action inGameEvent; // 게임 시작시 초기 이벤트
+    protected event Action InitGameEvent; // 게임 시작시 초기 이벤트
     
     public override void OnConnectedToMaster()
     {       
@@ -78,7 +78,7 @@ public class BasePhoton : MonoBehaviourPunCallbacks
             {
                 yield return null;
             }
-            inGameEvent?.Invoke();
+            InitGameEvent?.Invoke();
         }
     }
     /// <summary>
