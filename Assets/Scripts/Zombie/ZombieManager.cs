@@ -15,8 +15,6 @@ using System.Linq;
 public class ZombieManager : BaseGameManager<ZombiePlayer>
 {
     private ZombiePlayer localplayer;
-
-    // 조작가능한 좀비 리스트
     private List<Zombie> zombieList = new List<Zombie>();
 
     [Header("ZombieGameItemManager")]
@@ -49,13 +47,6 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
     [SerializeField]
     private Image gameCountImage;
 
-    // 랭킹 이벤트
-    public event EventHandler<List<ZombiePlayer>> ScoreListUpdateEvent; // 실시간으로 전체 플레이어 점수를 계산해 랭킹 계산
-    //public event EventHandler<ZombiePlayer> RankerEvent; // 랭커 이벤트(3위까지)
-
-    // 다시하기 이벤트
-    public event EventHandler ReStartGameEvent;
-
     public int ZombieSpawnPointLength { get { return zombieSpawnPoints.Length; } }
     public int ZombieKindCount { get { return zombiekindcount; } }
     public List<Zombie> ZombieList { get { return zombieList; } }
@@ -73,9 +64,6 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
             // 시간 , 점수 UI 활성화
             gameTimer.gameObject.SetActive(true);
             timeDurationText.text = timeDuration.ToString();
-
-            //myScore.gameObject.SetActive(true);
-            //myScoreText.text = 0.ToString();  
         }
 
         // Create Zombie
@@ -95,7 +83,7 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
         newzombie.SetPlayerList(playerList);
     }
     #region Game Process Event
-    private void InGameEvent()
+    protected override void GameObjectCreateEvent()
     {
         // 생성 위치 지정
         float angle = 360f / PhotonNetwork.CurrentRoom.PlayerCount;
@@ -108,9 +96,26 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
 
         // 캐릭터 생성
         ZombiePlayer newplayer = PhotonNetwork.Instantiate(path, position[PhotonNetwork.LocalPlayer.ActorNumber - 1], Quaternion.identity).GetComponent<ZombiePlayer>();
+        newplayer.gameObject.SetActive(false); // 세팅되기전 캐릭터 비활성화
         SetObjectParent(playersparent, newplayer.gameObject); // 생성된 플레이어는 Players Object 자식으로 넣어준다
-        newplayer.SetUnit(PhotonNetwork.LocalPlayer.ActorNumber, speed, this);
+        newplayer.SetUnit(PhotonNetwork.LocalPlayer.ActorNumber, speed, this); // 플레이어 세팅
+        newplayer.AutoAddScoreEventHandler += (isZombie) => // 이벤트 등록
+        {
+            // 좀비 상태가 아닌경우 1초마다 10점씩 점수증가
+            StartCoroutine(nameof(Coroutine_AutoAddScore));
+            IEnumerator Coroutine_AutoAddScore()
+            {
+                while (!IsGameOver)
+                {
+                    yield return new WaitForSeconds(1f);
 
+                    if (!isZombie)
+                        ScoreManager.Instance.AddScore(newplayer.ActorNumber, 10);
+                   
+                }
+            }
+        };
+        newplayer.gameObject.SetActive(true); // 세팅이 완료되었으므로 활성화
         if (newplayer.GetIsLocalPlayer())
         {
             localplayer = newplayer;
@@ -122,8 +127,10 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
         Transform localPlayer = Util.GetLocalPlayer();
         cameracontroller.MyLocalPlayerTarget = localPlayer; //로컬 플레이어 카메라 타겟 지정
         SetGameOver(false); // 게임 종료 변수 false로 초기화
+
+        base.GameObjectCreateEvent();
     }
-    private void GameStartEvent()
+    protected override void GameStartEvent()
     {
         UIPath = "Images/ZombieGame/";
         StartCoroutine(Coroutine_GameStartCount());
@@ -148,9 +155,7 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
             // 방장이 좀비 생성
             if (PhotonNetwork.LocalPlayer.IsMasterClient)
                 CreateZombie();
-
-            // MovePadController Target Player Add
-            Transform myplayer = Util.GetLocalPlayer();
+            Transform myplayer = Util.GetLocalPlayer();// MovePadController Target Player Add
             movepadctr.SetMyPlayer(myplayer.transform, speed);
 
             // 점수 카드 이벤트 등록
@@ -161,7 +166,6 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
                 {
                     GameObject obj = Instantiate(_prefab);
 
-                    // 추후 유틸 클래스로 적용
                     obj.transform.SetParent(parent.transform);
                     obj.transform.localScale = Vector3.one;
                     obj.transform.localPosition = Vector3.zero;
@@ -173,40 +177,32 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
                 cards = parent.GetComponentsInChildren<ScoreCard>();
                 ScoreManager.Instance.ShowScoreCardList(false); // 초기 점수 리스트 비활성화
             };
+            ScoreManager.Instance.gameObject.SetActive(true); // ScoreManager 오브젝트 활성화
 
-            // 점수카드 스크립트 오브젝트 활성화
-            ScoreManager.Instance.gameObject.SetActive(true);
+            // PlayerList Teleport ActionEvent Add
+            ZombieGameTeleport.Instance.PlayerList = playerList;
+
+            base.GameStartEvent();
         }
     }
-
-    private void GamePlayEvent()
+    protected override void GamePlayEvent()
     {
         float time = timeDuration + 1;
         StartCoroutine(Coroutine_GameTimer());
         IEnumerator Coroutine_GameTimer()
         {
-            while (time >= 0f)
-            {
-                // 1초씩 감소
-                time--;
-                timeDurationText.text = time.ToString();
-
+            // 1초씩 감소
+            while (time > 0f)
+            {               
                 yield return new WaitForSeconds(1f);
+
+                time -= 1f;
+                timeDurationText.text = time.ToString();               
             }
-            Debug.Log("GameOver !!");
-        }
+            base.GamePlayEvent();            
+        }       
     }
     #endregion
-
-    protected override void InitEventAdd()
-    {
-        // 이벤트 추가
-        InitGameEvent += InGameEvent; // 초기 게임 이벤트 등록
-        GameStartEventAction += GameStartEvent; //  게임 시작 이벤트 등록
-        GamePlayEventAction += GamePlayEvent; // 게임 플레이 이벤트 추가
-        // 게임 종료 이벤트 등록
-    }
-
     protected override void Awake()
     {
         base.Awake();
@@ -215,7 +211,5 @@ public class ZombieManager : BaseGameManager<ZombiePlayer>
         zombieSpawnPoints = new Transform[zombieSpawnPoint.transform.childCount];
         for (int i = 0; i < zombieSpawnPoint.transform.childCount; i++)
             zombieSpawnPoints[i] = zombieSpawnPoint.transform.GetChild(i);
-
-        InitEventAdd();
     }
 }

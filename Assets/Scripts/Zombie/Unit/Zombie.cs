@@ -154,6 +154,10 @@ public class Zombie : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
     public override void SetState(UnitState _state)
     {
         base.SetState(_state);
+
+        if (_state == UnitState.Attack)
+            KillEventHandler?.Invoke(this, targetplayer);
+
         stateTable[currentState].OperatorUpdate(); // 현재 상태 실행
     }
 
@@ -177,7 +181,9 @@ public class Zombie : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
     protected override void OnDisable()
     {
         base.OnDisable();
+
         RecoverEventHandler?.Invoke(this, playerList.Find(player => player.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber));
+        RecoverEventHandler = null;
     }
 
     protected override void Update()

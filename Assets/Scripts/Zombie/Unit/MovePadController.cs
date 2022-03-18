@@ -8,9 +8,7 @@ using Photon.Realtime;
 
 public class MovePadController : MonoBehaviour
 {
-    [Header("MovePad Controller")]
-    [SerializeField]
-    private GameObject padWindow;
+    [Header("MovePad Controller")]    
     [SerializeField]
     private GameObject padController;
     [SerializeField]

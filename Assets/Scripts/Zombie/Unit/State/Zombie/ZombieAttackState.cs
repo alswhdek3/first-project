@@ -13,18 +13,21 @@ public class ZombieAttackState : IState
     {
         // 공격 애니메이션 재생
         zombie.UnitAnimator.SetTrigger(UnitState.Attack.ToString());
-    }
-
-    public void OperatorExit()
-    {
+        
+        // 공격 이벤트 추가
         zombie.KillEventHandler += (_sender, player) =>
         {
             if (!zombie.IsAI) // 킬에 성공한 좀비 점수 증가(AI가 아닌 좀비)
                 ScoreManager.Instance.AddScore(zombie.ActorNumber, zombie.killscore);
 
             zombie.ResetTarget(); // 타겟 리셋
-            player.gameObject.SetActive(false); // 공격당한 플레이어 비활성화
+            player.SetState(UnitState.Die); // Player Die State Change
         };
+    }
+
+    public void OperatorExit()
+    {
+        zombie.ResetTarget();
     }
 
     public void OperatorUpdate()

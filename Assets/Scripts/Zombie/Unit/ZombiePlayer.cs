@@ -14,8 +14,8 @@ public class ZombiePlayer : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
 
     private int score;
 
-    public event EventHandler<ZombieGameTeleport> TeleportEventHandler; // 텔레포트 이벤트
-    public event Action<int> AutoAddScoreEventHandler; // 점수 자동 증가 이벤트
+    public event Action<ZombiePlayer,int> TeleportEventHandler; // 텔레포트 이벤트
+    public event Action<bool> AutoAddScoreEventHandler; // 점수 자동 증가 이벤트
 
     public int Score { get { return score; } }
     public bool IsZombie { get { return isZombie; } }
@@ -37,7 +37,7 @@ public class ZombiePlayer : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
 
     protected override void OnEnable()
     {
-           
+        AutoAddScoreEventHandler?.Invoke(isZombie);
     }
 
     protected override void OnDisable()
@@ -66,24 +66,12 @@ public class ZombiePlayer : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
         switch(type)
         {
             case ZombieGameItemType.Coin: // 10~100점 사이 점수 증가
-                int amount = UnityEngine.Random.Range(10, 101);
-                AddScore(amount);
+                if(pv.IsMine)
+                    ScoreManager.Instance.AddScore(ActorNumber, UnityEngine.Random.Range(10, 101));
                 break;
             default:
                 break;
         }
-    }
-    #endregion
-
-    #region EventHandler
-    private void DieEvent(object _sender , EventArgs _e)
-    {
-        int randomindex = UnityEngine.Random.Range(0, gamemanager.ZombieSpawnPointLength);
-        gamemanager.CreateZombie(randomindex, transform.position, false);
-    }
-    private void RecoveryEvent(object _sender , EventArgs _e)
-    {
-
     }
     #endregion
 
@@ -104,6 +92,12 @@ public class ZombiePlayer : Unit,IZombiePlayerSpawn,IZombieGameItemBuff
     protected override void OnTriggerEnter(Collider other)
     {
         base.OnTriggerEnter(other);
+        
+        if(other.gameObject.CompareTag("Teleport"))
+        {
+            int actornumber = Util.GetActorNumber(other.transform.name);
+            TeleportEventHandler?.Invoke(this,actornumber);
+        }
     }
 
     protected override void InitStateTableAdd()

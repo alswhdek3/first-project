@@ -18,14 +18,9 @@ public class Util : MonoBehaviourPun
         }
         return null;
     }
-
-    public static Transform GetTargetPlayer<T>(List<T> _playerList , int _actorNumber) where T : Component
+    public static int GetActorNumber(string _name)
     {
-        foreach(T player in _playerList)
-        {
-            if(_actorNumber == player.GetComponent<PhotonView>().OwnerActorNr)
-                return player.transform;
-        }
-        return null;
+        string[] split = _name.Split('_');
+        return int.Parse(split[1]);
     }
 }

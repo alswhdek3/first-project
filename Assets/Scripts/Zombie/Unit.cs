@@ -14,7 +14,7 @@ public enum UnitState
     Max
 }
 
-public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObservable
+public abstract class Unit : MonoBehaviourPun,IUnit,IAnimation,IPunObservable
 {
     protected ZombieManager gamemanager;
 
@@ -28,11 +28,10 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
     protected Vector3 currentDir;
     protected Quaternion currentRot;
 
-    protected Dictionary<UnitState, IState> stateTable = new Dictionary<UnitState, IState>();
+    protected Dictionary<UnitState, IState> stateTable = new Dictionary<UnitState,IState>();
     protected UnitState currentState;
 
-    // 이벤트
-    public event EventHandler<ZombieGameItem> ItemBuffEvent; // 아이템 버프 이벤트
+    // 이벤트  
     public event EventHandler UnitDisableEventHandler; // 비활성화 이벤트
     public event EventHandler UnitEnableEventHandler; // 활성화 이벤트
 
@@ -84,18 +83,6 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
         buff.PlayItemBuff(item);
     }
 
-    #region Interface Methods
-    public void Active()
-    {
-        gameObject.SetActive(true);
-    }
-
-    public void DeActive()
-    {
-        gameObject.SetActive(false);
-    }
-    #endregion
-
     #region RPC
     [PunRPC]
     protected void AnimationShareRPC(string _clip, bool _ison)
@@ -141,7 +128,7 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
         IEnumerator Coroutine_ResetState()
         {
             yield return new WaitForSeconds(length);
-            animator.SetBool(UnitState.Run.ToString(), false);
+            SetState(UnitState.Idle);
         }
     }
 
@@ -155,7 +142,7 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
     protected virtual void Start()
     {
         // 생성된 애니메이션 재생시간 테이블 추가
-        AnimationLengthTable = new Dictionary<string, float>();
+        AnimationLengthTable = new Dictionary<string,float>();
         int animationcliplength = animator.runtimeAnimatorController.animationClips.Length;
         for(int i=0; i< animationcliplength; i++)
         {
@@ -166,7 +153,6 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
                 AnimationLengthTable.Add(clip.name, clip.length);
         }
 
-        // InitStateTable
         InitStateTableAdd();
     }
 
@@ -203,9 +189,7 @@ public abstract class Unit :  MonoBehaviourPun,IUnit,IAnimation,IActive,IPunObse
 
     protected virtual void OnTriggerEnter(Collider other)
     {
-        // 아이템 버프 이벤트
-        if(other.gameObject.CompareTag("Item"))
-            ItemBuffEvent?.Invoke(this, other.GetComponent<ZombieGameItem>());
+        
     }    
     #endregion
 }

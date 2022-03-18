@@ -16,8 +16,8 @@ public class MissionData
     public string[] conditions;
     public int faceImageIndex;
     public string textUI;
-    public int jamamount;
-    public int expamount;
+    public long jamamount;
+    public long expamount;
 }
 [CreateAssetMenu(fileName = "MissionTable",menuName = "Table/MissionTable")]
 public class MissionTable : BaseTable
@@ -63,10 +63,10 @@ public class MissionTable : BaseTable
                         missiondata.textUI = coldata[j];
                         break;
                     case MissionData.MissionDataHead.Jamamount:
-                        missiondata.jamamount = int.Parse(coldata[j]);
+                        missiondata.jamamount = long.Parse(coldata[j]);
                         break;
                     case MissionData.MissionDataHead.ExpAmount:
-                        missiondata.expamount = int.Parse(coldata[j]);
+                        missiondata.expamount = long.Parse(coldata[j]);
                         break;
                 }
             }

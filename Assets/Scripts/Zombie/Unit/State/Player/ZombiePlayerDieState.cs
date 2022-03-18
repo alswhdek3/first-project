@@ -21,11 +21,12 @@ public class ZombiePlayerDieState : IState
             // 카메라 타겟 변경
             CameraController_MiniGame.Instance.MyLocalPlayerTarget = player.transform; 
         };
+        player.SetState(UnitState.Idle);
     }
 
     public void OperatorExit()
     {
-        
+        player.gameObject.SetActive(false);
     }
 
     public void OperatorUpdate()

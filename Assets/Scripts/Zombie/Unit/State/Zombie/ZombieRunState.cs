@@ -21,6 +21,6 @@ public class ZombieRunState : IState
 
     public void OperatorUpdate()
     {
-        zombie.TargetSearch();
+        zombie.TargetSearch();       
     }
 }

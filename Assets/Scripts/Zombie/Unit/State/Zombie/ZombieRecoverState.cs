@@ -19,13 +19,12 @@ public class ZombieRecoverState : IState
             prevlocalplayer.gameObject.SetActive(true);
             Debug.Log($"Enable Player ActorNumber : {prevlocalplayer.ActorNumber}");
         };
-        zombie.RecoverEventHandler += (_sender, prevlocalplayer) =>//회복 이벤트 등록
+        zombie.RecoverEventHandler += (_sender, prevlocalplayer) => //회복 이벤트 등록
         {
             ScoreManager.Instance.TargetScoreCardColorChange(prevlocalplayer.ActorNumber, Color.green);//점수 카드 색상 변경
             prevlocalplayer.SetIsZombie(false); //isZombie bool형 변수 false 값으로 변경
             zombie.gameObject.SetActive(false); // 좀비 비활성화
         };
-        zombie.SetState(UnitState.Idle); // 대기 상태로 변경
     }
 
     public void OperatorExit()
@@ -35,6 +34,6 @@ public class ZombieRecoverState : IState
 
     public void OperatorUpdate()
     {
-        
+        zombie.SetState(UnitState.Idle); // 대기 상태로 변경
     }
 }

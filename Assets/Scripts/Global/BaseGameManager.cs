@@ -8,7 +8,7 @@ using Photon.Realtime;
 using UnityEngine.UI;
 using UnityEngine;
 
-public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGameProcess , ICamera where T : Component
+public class BaseGameManager<T> : BasePhoton,IPlayerList<T>,IGameProcess,ICamera where T : Component
 {
     [SerializeField]
     protected GameObject gamePlayObject;
@@ -33,9 +33,10 @@ public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGamePr
 
     protected List<T> playerList = new List<T>();
 
-    protected event Action GameStartEventAction;
-    protected event Action GamePlayEventAction;
-    protected event Action GameOverEventAction;
+    protected event Action GameStartEventHandler;
+    protected event Action GameObjectCreateEventHandler;
+    protected event Action GamePlayEventHandler;
+    protected event Action GameOverEventEventHandler;
 
     protected string UIPath { get; set; }
     public List<T> PlayerList { get { return playerList; } }
@@ -47,7 +48,13 @@ public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGamePr
         _children.transform.SetParent(_parent.transform);
     }
 
-    protected abstract void InitEventAdd();
+    private void InitEventAdd()
+    {
+        GameStartEventHandler += GameStartEvent;
+        GameObjectCreateEventHandler += GameObjectCreateEventHandler;
+        GamePlayEventHandler += GamePlayEvent;
+        GameOverEventEventHandler += GameOverEvent;
+    }
 
     #region PlayerList Interface
     public void AddPlayer(T _newplayer)
@@ -106,16 +113,38 @@ public abstract class BaseGameManager<T> : BasePhoton , IPlayerList<T> , IGamePr
     }
     #endregion
 
+    #region Events
+    protected virtual void GameStartEvent()
+    {
+        GameObjectCreateEventHandler?.Invoke();
+    }
+    protected virtual void GameObjectCreateEvent()
+    {
+        GamePlayEventHandler?.Invoke();
+    }
+    protected virtual void GamePlayEvent()
+    {
+        GameOverEventEventHandler?.Invoke();
+    }
+    protected virtual void GameOverEvent()
+    {
+
+    }
+    #endregion
+
     protected override void Awake()
     {
+        base.Awake();
+
         IsGameOver = true;
+        InitEventAdd();
     }
     protected override void Start()
     {
-        base.Start();
-
-        GameStartEventAction?.Invoke();
-        GamePlayEventAction?.Invoke();
-        GameOverEventAction?.Invoke();
+        base.Start();        
+    }
+    public override void OnEnable()
+    {
+        GameStartEventHandler?.Invoke();
     }
 }

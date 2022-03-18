@@ -44,7 +44,6 @@ public class ZombieGameItem : BaseItem
 
     protected override void OnTriggerEnter(Collider other)
     {
-        // 아이템 버프 이벤트 등록
         base.OnTriggerEnter(other);
     }
 }

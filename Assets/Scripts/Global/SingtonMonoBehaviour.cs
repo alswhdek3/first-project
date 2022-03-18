@@ -1,8 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+
+using Photon.Realtime;
+using Photon.Pun;
+
 using UnityEngine;
 
-public class SingtonMonoBehaviour<T> : MonoBehaviour where T : SingtonMonoBehaviour<T>
+public class SingtonMonoBehaviour<T> : MonoBehaviourPun where T : SingtonMonoBehaviour<T>
 {
     static public T Instance { get; private set; }
 

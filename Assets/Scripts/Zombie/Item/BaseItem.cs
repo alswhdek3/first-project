@@ -45,7 +45,7 @@ public abstract class BaseItem : MonoBehaviour
 
     protected virtual void EnableEvent(object _sender, EventArgs _e)
     {
-        transform.Rotate(new Vector3(0f, rotatespeed, 0f), Space.World);
+        transform.Rotate(new Vector3(0f, Time.deltaTime * rotatespeed, 0f), Space.World);
     }
 
     protected virtual void Start()
@@ -63,8 +63,7 @@ public abstract class BaseItem : MonoBehaviour
     }
     protected virtual void Update()
     {
-        // 아이템 Y축 회전
-        transform.Rotate(new Vector3(0f, Time.deltaTime * rotatespeed, 0f), Space.World);
+        EnableEventHandler?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void OnTriggerEnter(Collider other)
